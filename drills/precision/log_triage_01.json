@@ -1,0 +1,31 @@
+{
+  "id": "log_triage_01",
+  "name": "IOC Triage Precision",
+  "modality": "precision",
+  "domain": "cybersecurity",
+  "tier": "Omega",
+  "sets": 3,
+  "reps_per_set": 4,
+  "error_budget": 1,
+  "pass_score": 0.99,
+  "prompt_template": "You are on SOC triage. From the auth log below, extract ONLY the indicator of compromise: the single external source IP responsible for the brute-force pattern. Reply in the form 'IOC: <ip>'. Do not list internal (10.x) hosts. Do not explain.",
+  "progression": {"var": "noise_lines", "start": 0, "step": 15},
+  "tasks": [
+    {
+      "input": "Sep 11 03:12:01 edge-01 sshd[4411]: Failed password for root from 203.0.113.44 port 51022 ssh2\nSep 11 03:12:04 edge-01 sshd[4413]: Failed password for root from 203.0.113.44 port 51024 ssh2\nSep 11 03:12:07 edge-01 sshd[4415]: Failed password for admin from 203.0.113.44 port 51029 ssh2\nSep 11 03:14:55 edge-01 sshd[4470]: Accepted publickey for svc_backup from 10.0.3.12 port 40211 ssh2",
+      "expect": {"contains": ["203.0.113.44"], "not_contains": ["10.0.3.12"]}
+    },
+    {
+      "input": "Sep 11 04:01:10 vpn-gw sshd[901]: Failed password for invalid user oracle from 198.51.100.23 port 38812 ssh2\nSep 11 04:01:13 vpn-gw sshd[903]: Failed password for invalid user admin from 198.51.100.23 port 38815 ssh2\nSep 11 04:02:40 vpn-gw sshd[917]: Accepted password for m.reyes from 10.0.4.51 port 51220 ssh2",
+      "expect": {"contains": ["198.51.100.23"], "not_contains": ["10.0.4.51"]}
+    },
+    {
+      "input": "Sep 11 05:22:33 ws-04 sshd[2201]: Failed password for root from 203.0.113.107 port 61002 ssh2\nSep 11 05:22:36 ws-04 sshd[2203]: Failed password for root from 203.0.113.107 port 61005 ssh2\nSep 11 05:23:01 ws-04 sshd[2210]: Accepted publickey for j.chen from 10.0.2.31 port 45501 ssh2\nSep 11 05:25:14 ws-04 sshd[2240]: Accepted publickey for cron from 10.0.2.31 port 46110 ssh2",
+      "expect": {"contains": ["203.0.113.107"], "not_contains": ["10.0.2.31"]}
+    },
+    {
+      "input": "Sep 11 06:44:02 nas-01 sshd[777]: Failed password for invalid user test from 198.51.100.190 port 29901 ssh2\nSep 11 06:44:05 nas-01 sshd[779]: Failed password for invalid user guest from 198.51.100.190 port 29904 ssh2\nSep 11 06:47:30 nas-01 sshd[801]: Accepted publickey for a.okafor from 10.0.6.88 port 50012 ssh2",
+      "expect": {"contains": ["198.51.100.190"], "not_contains": ["10.0.6.88"]}
+    }
+  ]
+}

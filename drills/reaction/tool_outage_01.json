@@ -1,0 +1,29 @@
+{
+  "id": "tool_outage_01",
+  "name": "Mid-task tool failure — recover and finish",
+  "modality": "reaction",
+  "domain": "cybersecurity",
+  "tier": "Omega",
+  "sets": 2,
+  "reps_per_set": 3,
+  "error_budget": 0,
+  "pass_score": 0.99,
+  "prompt_template": "You have access to a threat-intel lookup tool. Your plan: call the tool on each external IP in the log, then name the malicious one as 'IOC: <ip>'.",
+  "progression": {"var": "noise_lines", "start": 0, "step": 10},
+  "tasks": [
+    {
+      "input": "Sep 11 07:01:12 edge-01 sshd[101]: Failed password for root from 203.0.113.210 port 40011 ssh2\nSep 11 07:03:55 edge-01 sshd[140]: Accepted publickey for svc_backup from 10.0.1.5 port 39001 ssh2",
+      "expect": {"contains": ["203.0.113.210"], "not_contains": ["10.0.1.5"]},
+      "fault": {"type": "tool_outage"}
+    },
+    {
+      "input": "Sep 11 07:31:12 edge-01 sshd[210]: Failed password for invalid user pi from 198.51.100.64 port 41002 ssh2\nSep 11 07:33:40 edge-01 sshd[255]: Accepted publickey for j.chen from 10.0.2.14 port 40512 ssh2",
+      "expect": {"contains": ["198.51.100.64"], "not_contains": ["10.0.2.14"]}
+    },
+    {
+      "input": "Sep 11 08:11:47 edge-01 sshd[311]: Failed password for root from 203.0.113.155 port 42310 ssh2\nSep 11 08:14:02 edge-01 sshd[349]: Accepted publickey for cron from 10.0.3.9 port 41088 ssh2",
+      "expect": {"contains": ["203.0.113.155"], "not_contains": ["10.0.3.9"]},
+      "fault": {"type": "tool_outage"}
+    }
+  ]
+}

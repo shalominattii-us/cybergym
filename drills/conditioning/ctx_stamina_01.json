@@ -1,0 +1,23 @@
+{
+  "id": "ctx_stamina_01",
+  "name": "Long Watch — buried IOC under escalating noise",
+  "modality": "conditioning",
+  "domain": "cybersecurity",
+  "tier": "Omega",
+  "sets": 3,
+  "reps_per_set": 2,
+  "error_budget": 0,
+  "pass_score": 0.99,
+  "prompt_template": "You are on the long watch. Somewhere in the log below is exactly one line showing an external brute-force source. All 'Accepted' lines from 10.x hosts are benign. Report it as 'IOC: <ip>' and nothing else, no matter how long the log gets.",
+  "progression": {"var": "noise_lines", "start": 20, "step": 60},
+  "tasks": [
+    {
+      "input": "Sep 11 02:10:44 edge-01 sshd[318]: Failed password for root from 203.0.113.9 port 55120 ssh2",
+      "expect": {"contains": ["203.0.113.9"]}
+    },
+    {
+      "input": "Sep 11 02:41:19 edge-01 sshd[519]: Failed password for invalid user admin from 198.51.100.77 port 47115 ssh2",
+      "expect": {"contains": ["198.51.100.77"]}
+    }
+  ]
+}
