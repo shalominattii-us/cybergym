@@ -57,6 +57,41 @@ class GymSmokeTest(unittest.TestCase):
         self.assertEqual(board["session_means"], [1.0])
         self.assertEqual(board["improvement_velocity"], 0.0)  # one session
 
+    def test_lmstudio_adapter_against_stub_server(self):
+        """Device is off in dev, so verify against an in-process stub that
+        speaks LM Studio's OpenAI-compatible API (:1234 shape)."""
+        import threading
+        from http.server import BaseHTTPRequestHandler, HTTPServer
+
+        from gym.athlete import LMStudioAthlete
+
+        class Stub(BaseHTTPRequestHandler):
+            def _send(self, obj):
+                body = json.dumps(obj).encode()
+                self.send_response(200)
+                self.send_header("Content-Type", "application/json")
+                self.send_header("Content-Length", str(len(body)))
+                self.end_headers()
+                self.wfile.write(body)
+
+            def do_GET(self):
+                self._send({"data": [{"id": "heretic-test-model"}]})
+
+            def do_POST(self):
+                self._send({"choices": [{"message": {"content": "IOC: 203.0.113.44"}}]})
+
+            def log_message(self, *args):
+                pass
+
+        server = HTTPServer(("127.0.0.1", 0), Stub)
+        threading.Thread(target=server.serve_forever, daemon=True).start()
+        try:
+            athlete = LMStudioAthlete(host=f"http://127.0.0.1:{server.server_port}")
+            self.assertEqual(athlete.athlete_id, "lmstudio:heretic-test-model")
+            self.assertIn("203.0.113.44", athlete.complete("p", {"input": "x"}))
+        finally:
+            server.shutdown()
+
     def test_ledger_is_append_only_jsonl(self):
         _, ledger = self._run("drills/precision/log_triage_01.json")
         with open(ledger.path, encoding="utf-8") as fh:

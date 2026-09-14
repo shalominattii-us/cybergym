@@ -92,6 +92,42 @@ class GroqAthlete:
             return json.loads(resp.read())["choices"][0]["message"]["content"]
 
 
+class LMStudioAthlete:
+    """Local athlete via LM Studio's OpenAI-compatible server (:1234).
+
+    If no model is named, auto-detects whatever LM Studio currently has
+    loaded — useful when the unit cycles through Heretic-processed
+    (abliterated / de-refused) builds and the exact model id keeps changing.
+    """
+
+    def __init__(self, model: str | None = None, host: str = "http://localhost:1234"):
+        self.host = host.rstrip("/")
+        self.model = model or self._loaded_model()
+        self.athlete_id = f"lmstudio:{self.model}"
+
+    def _loaded_model(self) -> str:
+        with urllib.request.urlopen(f"{self.host}/v1/models", timeout=30) as resp:
+            data = json.loads(resp.read()).get("data", [])
+        if not data:
+            raise RuntimeError("LM Studio server reachable but no model loaded")
+        return data[0]["id"]
+
+    def complete(self, prompt: str, context: dict) -> str:
+        body = json.dumps({
+            "model": self.model,
+            "messages": [
+                {"role": "system", "content": prompt},
+                {"role": "user", "content": context.get("input", "")},
+            ],
+        }).encode()
+        req = urllib.request.Request(
+            f"{self.host}/v1/chat/completions", data=body,
+            headers={"Content-Type": "application/json"},
+        )
+        with urllib.request.urlopen(req, timeout=900) as resp:
+            return json.loads(resp.read())["choices"][0]["message"]["content"]
+
+
 class AegentixAthlete:
     """Adapter stub for the AEGENTIS core on the Windows unit.
 
@@ -116,6 +152,8 @@ def get_athlete(spec: str, model: str | None = None) -> Athlete:
         return MockAthlete()
     if spec == "ollama":
         return OllamaAthlete(model=model or "llama3.1:8b")
+    if spec == "lmstudio":
+        return LMStudioAthlete(model=model)
     if spec == "groq":
         return GroqAthlete(model=model or "llama-3.3-70b-versatile")
     if spec == "aegentis":

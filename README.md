@@ -25,6 +25,9 @@ python -m gym.engine run --drill drills/precision/log_triage_01.json --athlete m
 # Real athlete on the local LLM Armada (Ollama :11434)
 python -m gym.engine run --drill drills/conditioning/ctx_stamina_01.json --athlete ollama --model llama3.1:8b
 
+# Or LM Studio (auto-detects whatever model is loaded, incl. Heretic builds)
+python -m gym.engine run --drill drills/precision/log_triage_01.json --athlete lmstudio
+
 # Cloud bridge athlete (Groq) — key from env, never from a file
 export GROQ_API_KEY=...   # placeholder only; real key lives in the vault
 python -m gym.engine run --drill drills/reaction/tool_outage_01.json --athlete groq

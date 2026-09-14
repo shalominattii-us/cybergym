@@ -148,7 +148,7 @@ def main():
     run = sub.add_parser("run")
     run.add_argument("--drill", required=True)
     run.add_argument("--athlete", default="mock",
-                     choices=["mock", "ollama", "groq", "aegentis"])
+                     choices=["mock", "ollama", "lmstudio", "groq", "aegentis"])
     run.add_argument("--model", default=None)
     run.add_argument("--ledger-dir", default="ledger")
     run.add_argument("--seed", type=int, default=7)
